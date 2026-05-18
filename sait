@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Магазин — Заказы в Telegram</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background: #f4f7fc;
+            color: #1a2c3e;
+            line-height: 1.5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Шапка */
+        .header {
+            text-align: center;
+            padding: 40px 20px 20px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            color: #2c5368;
+            margin-top: 10px;
+        }
+
+        /* Товары */
+        .products {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 25px;
+            justify-content: center;
+            margin: 40px 0;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 28px;
+            box-shadow: 0 20px 35px -10px rgba(0,0,0,0.1);
+            overflow: hidden;
+            width: 280px;
+            transition: transform 0.25s ease, box-shadow 0.25s;
+            cursor: pointer;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .product-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 25px 40px -12px rgba(0,0,0,0.2);
+        }
+
+        .product-img {
+            height: 200px;
+            background: #eef2f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 5rem;
+        }
+
+        .product-info {
+            padding: 20px;
+        }
+
+        .product-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .product-price {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #2a5298;
+            margin: 10px 0;
+        }
+
+        .product-desc {
+            color: #4a627a;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .select-btn {
+            width: 100%;
+            padding: 12px;
+            background: #1e3c72;
+            color: white;
+            border: none;
+            border-radius: 40px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .select-btn:hover {
+            background: #0f2b4f;
+        }
+
+        /* Форма заказа */
+        .order-section {
+            background: white;
+            border-radius: 40px;
+            padding: 30px;
+            margin: 30px 0;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05);
+        }
+
+        .order-section h2 {
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+            border-left: 5px solid #2a5298;
+            padding-left: 18px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 14px 18px;
+            border: 1.5px solid #dce5ec;
+            border-radius: 28px;
+            font-size: 1rem;
+            transition: 0.2s;
+            font-family: inherit;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #2a5298;
+            box-shadow: 0 0 0 3px rgba(42,82,152,0.2);
+        }
+
+        .selected-product {
+            background: #eef2fa;
+            padding: 14px 18px;
+            border-radius: 28px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        button[type="submit"] {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.1s;
+        }
+
+        button[type="submit"]:active {
+            transform: scale(0.98);
+        }
+
+        .status {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 30px;
+            text-align: center;
+            font-weight: 500;
+            display: none;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px;
+            color: #5a6e7c;
+            font-size: 0.85rem;
+        }
+
+        @media (max-width: 700px) {
+            .product-card {
+                width: 100%;
+                max-width: 320px;
+            }
+            .header h1 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>✨ Премиум-магазин</h1>
+        <p>Выберите товар и оформите заказ — мы сразу получим уведомление в Telegram</p>
+    </div>
+
+    <div class="products" id="productsContainer">
+        <!-- Товары подставятся через JS, но для наглядности пропишем структуру -->
+    </div>
+
+    <div class="order-section">
+        <h2>📋 Детали заказа</h2>
+        <div class="selected-product" id="selectedDisplay">👉 Выберите товар выше</div>
+        <form id="orderForm">
+            <div class="form-group">
+                <label>Ваше имя</label>
+                <input type="text" id="userName" placeholder="Иван Петров" required>
+            </div>
+            <div class="form-group">
+                <label>Телефон / Telegram @username</label>
+                <input type="text" id="userContact" placeholder="+7 999 123-45-67 или @nick" required>
+            </div>
+            <div class="form-group">
+                <label>Адрес доставки / комментарий</label>
+                <textarea rows="3" id="userAddress" placeholder="Город, улица, дом, подъезд..."></textarea>
+            </div>
+            <input type="hidden" id="productId">
+            <input type="hidden" id="productName">
+            <input type="hidden" id="productPrice">
+            <button type="submit">🚀 Отправить заказ в Telegram</button>
+        </form>
+        <div id="statusMessage" class="status"></div>
+        <p style="font-size: 0.8rem; margin-top: 15px; text-align: center;">✅ После заказа менеджер свяжется с вами в течение 15 минут</p>
+    </div>
+    <footer>
+        © 2025 · Оплата при получении · Работаем через Telegram
+    </footer>
+</div>
+
+<script>
+    // ---------- КАТАЛОГ ТОВАРОВ ----------
+    const products = [
+        { id: 1, name: "⚡ Умные часы Pro", price: 4990, desc: "AMOLED, GPS, уведомления", emoji: "⌚" },
+        { id: 2, name: "🎧 Беспроводные наушники", price: 2990, desc: "Шумоподавление, 20ч работы", emoji: "🎧" },
+        { id: 3, name: "📱 Смарт-кольцо Фитнес", price: 1990, desc: "Отслеживание сна и пульса", emoji: "💍" },
+        { id: 4, name: "🔊 Портативная колонка", price: 3990, desc: "Влагозащита, мощный бас", emoji: "🔊" }
+    ];
+
+    let currentSelectedProduct = null;
+
+    // Рендер карточек
+    function renderProducts() {
+        const container = document.getElementById('productsContainer');
+        container.innerHTML = '';
+        products.forEach(prod => {
+            const card = document.createElement('div');
+            card.className = 'product-card';
+            card.dataset.id = prod.id;
+            card.innerHTML = `
+                <div class="product-img">${prod.emoji}</div>
+                <div class="product-info">
+                    <div class="product-title">${prod.name}</div>
+                    <div class="product-price">${prod.price.toLocaleString()} ₽</div>
+                    <div class="product-desc">${prod.desc}</div>
+                    <button class="select-btn" data-id="${prod.id}">Выбрать</button>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+
+        // Добавляем обработчики на кнопки "Выбрать"
+        document.querySelectorAll('.select-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const prodId = parseInt(btn.dataset.id);
+                const product = products.find(p => p.id === prodId);
+                if (product) {
+                    selectProduct(product);
+                }
+            });
+        });
+    }
+
+    function selectProduct(product) {
+        currentSelectedProduct = product;
+        document.getElementById('selectedDisplay').innerHTML = `✅ Выбран товар: <strong>${product.name}</strong> — ${product.price.toLocaleString()} ₽`;
+        document.getElementById('productId').value = product.id;
+        document.getElementById('productName').value = product.name;
+        document.getElementById('productPrice').value = product.price;
+        // Плавный скролл к форме
+        document.querySelector('.order-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // ---------- ОТПРАВКА В TELEGRAM (через бота) ----------
+    // ⚠️ ВАЖНО: замените значения ниже на свои!
+    const BOT_TOKEN = 'YOUR_BOT_TOKEN';        // сюда токен от @BotFather
+    const CHAT_ID = 'YOUR_CHAT_ID';            // ID вашего канала или личного чата (можно получить через @userinfobot)
+
+    // Функция отправки в Telegram
+    async function sendOrderToTelegram(orderData) {
+        const message = `🛒 *НОВЫЙ ЗАКАЗ С САЙТА* 🛒\n\n` +
+                        `📦 *Товар:* ${orderData.productName}\n` +
+                        `💰 *Цена:* ${orderData.productPrice} ₽\n` +
+                        `👤 *Имя:* ${orderData.name}\n` +
+                        `📞 *Контакт:* ${orderData.contact}\n` +
+                        `🏠 *Адрес/Коммент:* ${orderData.address || 'Не указан'}\n` +
+                        `🕒 *Время:* ${new Date().toLocaleString()}`;
+
+        const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chat_id: CHAT_ID,
+                    text: message,
+                    parse_mode: 'Markdown',
+                    disable_web_page_preview: true
+                })
+            });
+            const data = await response.json();
+            if (data.ok) {
+                return { success: true };
+            } else {
+                console.error('Telegram API ошибка:', data);
+                return { success: false, error: data.description };
+            }
+        } catch (err) {
+            console.error('Сетевая ошибка:', err);
+            return { success: false, error: err.message };
+        }
+    }
+
+    // Обработка формы
+    const form = document.getElementById('orderForm');
+    const statusDiv = document.getElementById('statusMessage');
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        // Проверка: выбран ли товар
+        if (!currentSelectedProduct) {
+            showStatus('⚠️ Сначала выберите товар из каталога!', 'error');
+            return;
+        }
+
+        const name = document.getElementById('userName').value.trim();
+        const contact = document.getElementById('userContact').value.trim();
+        const address = document.getElementById('userAddress').value.trim();
+
+        if (!name || !contact) {
+            showStatus('❌ Пожалуйста, заполните имя и контактные данные', 'error');
+            return;
+        }
+
+        // Собираем заказ
+        const orderPayload = {
+            productName: currentSelectedProduct.name,
+            productPrice: currentSelectedProduct.price,
+            name: name,
+            contact: contact,
+            address: address
+        };
+
+        // Отключаем кнопку на время отправки
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerText;
+        submitBtn.disabled = true;
+        submitBtn.innerText = '⏳ Отправка...';
+
+        showStatus('⏳ Отправляем заказ в Telegram...', 'success'); // временно
+
+        const result = await sendOrderToTelegram(orderPayload);
+
+        if (result.success) {
+            showStatus('✅ Заказ успешно отправлен! Менеджер скоро свяжется с вами.', 'success');
+            form.reset();
+            // сбросить выбранный товар (по желанию)
+            currentSelectedProduct = null;
+            document.getElementById('selectedDisplay').innerHTML = '👉 Выберите товар выше';
+            document.getElementById('productId').value = '';
+            document.getElementById('productName').value = '';
+            document.getElementById('productPrice').value = '';
+        } else {
+            showStatus(`❌ Ошибка отправки: ${result.error}. Проверьте токен бота или chat_id.`, 'error');
+        }
+
+        submitBtn.disabled = false;
+        submitBtn.innerText = originalText;
+    });
+
+    function showStatus(msg, type) {
+        statusDiv.textContent = msg;
+        statusDiv.className = `status ${type}`;
+        statusDiv.style.display = 'block';
+        setTimeout(() => {
+            statusDiv.style.display = 'none';
+        }, 5000);
+    }
+
+    // Инициализация
+    renderProducts();
+</script>
+</body>
+</html>
